@@ -7,11 +7,13 @@ import time
 cap = cv2.VideoCapture(0)
 detector = HandDetector(maxHands=2)
 offset = 20
+offset1 = 10
+off_gap = math.ceil(offset/2)
 imgSize = 224
-folder = "data/E"
+folder = "data/T"
 counter = 0
 haveHand = False
-label = ["A", "B", "C", "D", "_D", "E"]
+labels = ["A", "B", "C", "D", "_D", "E"]
 
 while True:
     success, img = cap.read()
@@ -32,28 +34,27 @@ while True:
                     # print(x,y,w,h)
                     aspectRatio = h/w
                     if aspectRatio > 1:
-                        k = imgSize/h
+                        k = (imgSize - offset1)/h
                         wCal = math.ceil(k*w)
                         # print(wCal)
-                        if wCal < imgSize:
+                        if wCal <= imgSize:
                             haveHand = True
-                            imgResize = cv2.resize(imgCrop, (wCal, imgSize))
+                            imgResize = cv2.resize(imgCrop, (wCal, imgSize - offset1))
                             imgResizeShape = imgResize.shape
                             # print("img resize shape:", imgResizeShape)
-                            wGap = math.ceil((imgSize-wCal)/2)
-                            imgWhite[:, wGap:wCal + wGap] = imgResize
+                            wGap = math.ceil((imgSize - wCal)/2)
+                            imgWhite[ :imgSize - offset1, wGap:wCal + wGap] = imgResize
                     else:
-                        k = imgSize/w
+                        k = (imgSize -offset1)/w
                         hCal = math.ceil(k*h)
                         # print(hCal)
-                        if hCal < imgSize:
-                            imgResize = cv2.resize(imgCrop, (imgSize, hCal))
+                        if hCal <= imgSize:
+                            haveHand = True
+                            imgResize = cv2.resize(imgCrop, (imgSize -offset1 , hCal))
                             imgResizeShape = imgResize.shape
                             # print("img resize shape:", imgResizeShape)
-                            hGap = math.ceil((imgSize-hCal)/2)
-                            imgWhite[hGap:hCal + hGap, :] = imgResize
-
-
+                            hGap = math.ceil((imgSize - hCal)/2)
+                            imgWhite[hGap:hCal + hGap, :imgSize-offset1] = imgResize
 
 
                     # cv2.imshow("Picture crop", imgCrop)

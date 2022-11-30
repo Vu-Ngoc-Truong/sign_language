@@ -14,7 +14,7 @@ folder = "data/D"
 counter = 0
 haveHand = False
 threshold = 0.95
-labels =  ["A", "B", "C", "D", "_D", "E"]
+labels =  ["A", "B", "C", "D", "E", "G", "H", "I", "L", "M", "N", "ILY", "^", "HUYEN", "SAC","_D", "T", "O"]
 
 while True:
     success, img = cap.read()
