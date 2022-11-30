@@ -11,8 +11,8 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
-        MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(780, 400)
+        MainWindow.setObjectName("Đọc Thủ Ngữ")
+        MainWindow.resize(800, 400)
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.btnStart = QtWidgets.QPushButton(self.centralwidget)
@@ -46,7 +46,7 @@ class Ui_MainWindow(object):
         self.btnExit.setObjectName("btnExit")
         self.btnExit.setStyleSheet("background-color: red")
         self.graphicsView = QtWidgets.QGraphicsView(self.centralwidget)
-        self.graphicsView.setGeometry(QtCore.QRect(0, 25, 640, 400))
+        self.graphicsView.setGeometry(QtCore.QRect(0, 25, 640, 375))
         self.graphicsView.setObjectName("graphicsView")
         self.txtResult = QtWidgets.QLabel(self.centralwidget)
         self.txtResult.setGeometry(QtCore.QRect(0, 0, 640, 25))
