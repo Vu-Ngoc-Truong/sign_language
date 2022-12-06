@@ -70,7 +70,8 @@ class HandDetect():
     def __init__(self):
         self.cap = cv2.VideoCapture(0)
         self.detector = HandDetector(maxHands=2)
-        self.classifier = Classifier("model/keras_model.h5", "model/labels.txt")
+        self.classifier = Classifier("/home/ngoctruong/code_ws/Python/signLanguage/model/keras_model.h5",
+                                    "/home/ngoctruong/code_ws/Python/signLanguage/model/labels.txt")
         self.offset = 20
         self.imgSize = 224
         self.threshold = 0.95
