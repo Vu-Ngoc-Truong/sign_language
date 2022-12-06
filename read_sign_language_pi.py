@@ -17,7 +17,11 @@ HOME = os.path.expanduser('~')
 import threading
 #######################
 dir_path = os.path.dirname(os.path.realpath(__file__))
-
+from picamera2 import Picamera2, Preview
+picam2 = Picamera2()
+# self.picam2.start_preview(Preview.QTGL)
+picam2.configure(picam2.create_preview_configuration(main={"format": 'RGB888', "size": (640, 375)}))
+picam2.start()
 
 class OpenCV_Display():
     def __init__(self):
@@ -152,14 +156,14 @@ class HandDetect():
         # self.camera_source = LaptopCamera()
 
         # use camera in rapsberry pi
-        self.camera_source = PiCamera()
+        # self.camera_source = PiCamera()
 
     def read_sign(self):
         # Use camera in laptop
         # success, img = self.camera_source.cap.read()
 
         # Use camera in raspberry pi
-        img = self.camera_source.picam2.capture_array()
+        img = picam2.capture_array()
 
         imgOutput = img.copy()
         hands, img = self.detector.findHands(img)

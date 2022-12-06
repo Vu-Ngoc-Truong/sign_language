@@ -14,4 +14,4 @@ class PiCamera():
         self.picam2.configure(self.picam2.create_preview_configuration(main={"format": 'RGB888', "size": (640, 375)}))
         self.picam2.start()
 
-        self.img = self.picam2.capture_array()
+        # self.img = self.picam2.capture_array()
