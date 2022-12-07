@@ -130,7 +130,7 @@ class OpenCV_Display():
         print("Tra loi hinh anh")
 
         # Disable video
-        # self.video_enable = False
+        self.video_enable = False
         # Nhận câu nói từ microphone
         try:
             user_talk = listen_audio(self.language).lower()
