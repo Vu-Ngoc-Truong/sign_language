@@ -57,6 +57,11 @@ class OpenCV_Display():
         if not self.video_enable:
             return
         self.show_video = not self.show_video
+        if self.show_video:
+            self.ui.btnStart.setText("Stop")
+        else:
+            self.ui.btnStart.setText("Start")
+
         self.last_indexs = ""
         while self.show_video and self.video_enable:
             if self.exit:
@@ -128,9 +133,12 @@ class OpenCV_Display():
         self.ui.btnReply.setEnabled(False)
         self.ui.btnExit.setEnabled(False)
         print("Tra loi hinh anh")
-
+        self.ui.txtImage.setText("Mời bạn nói!")
         # Disable video
         self.video_enable = False
+        self.show_video = False
+        self.ui.btnStart.setText("Start")
+
         # Nhận câu nói từ microphone
         try:
             user_talk = listen_audio(self.language).lower()
