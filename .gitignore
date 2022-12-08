@@ -1,9 +1,3 @@
 *.pyc
-*.exe
-*.spec
-*.deb
+
 .vscode
-!.vscode/settings.json
-*.code-workspace
-data
-data1

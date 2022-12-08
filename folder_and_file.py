@@ -25,8 +25,8 @@ def delete_all_file(path):
         print("Delete all file error!")
 
 if __name__ == '__main__':
-    labels = ['A','B','C','D','Đ','E','G','H','I','K','L','M','N','O','P','Q','R','S','T','U','V','X','Y',"SAC","HUYEN", "HOI","NGA","NANG","CACH","CHAM", "HI","ILY"]
+    labels = ['A','B','C','D','Đ','E','G','H','I','K','L','M','N','O','P','Q','R','S','T','U','V','X','Y',"SAC","HUYEN", "HOI","NGA","NANG","CACH","CHAM", "HI","ILY","MU","RAU"]
     print(len(labels))
     path_dir = dir_path = os.path.dirname(os.path.realpath(__file__))
-    # creat_folder(path_dir + "/train",labels)
-    delete_all_file(path_dir + "/data")
+    creat_folder(path_dir + "/train",labels)
+    # delete_all_file(path_dir + "/data")

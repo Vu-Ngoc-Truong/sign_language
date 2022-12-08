@@ -5,7 +5,7 @@ from cvzone.HandTrackingModule import HandDetector
 import numpy as np
 import math
 import time
-# from picamera2 import Picamera2, Preview
+from picamera2 import Picamera2, Preview
 from folder_and_file import delete_all_file, creat_folder
 from save_image_ui import Ui_MainWindow
 from PyQt5 import QtCore, QtGui, QtWidgets
@@ -18,7 +18,7 @@ picam2.start()
 
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
-labels = ['A','B','C','D','Đ','E','G','H','I','K','L','M','N','O','P','Q','R','S','T','U','V','X','Y',"SAC","HUYEN", "HOI","NGA","NANG","CACH","CHAM", "HI","ILY"]
+labels = ['A','B','C','D','Đ','E','G','H','I','K','L','M','N','O','P','Q','R','S','T','U','V','X','Y',"SAC","HUYEN", "HOI","NGA","NANG","CACH","CHAM", "HI","ILY","MU","RAU"]
 
 class CollectionImage():
     def __init__(self):
@@ -97,7 +97,6 @@ class CollectionImage():
         detector = HandDetector(maxHands=2)
         offset = 20
         imgSize = 224
-        self.img_path = os.path.join(self.train_path, self.ui.cbbFolder.currentText())
         counter = 0
         haveHand = False
         print("bnt is down: ",self.ui.btnSave.isDown())
@@ -108,6 +107,7 @@ class CollectionImage():
                     break
                 # Use camera Pi
                 img = picam2.capture_array()
+                self.img_path = os.path.join(self.train_path, self.ui.cbbFolder.currentText())
 
                 # # Use camera laptop
                 # success, img = self.cap.read()
