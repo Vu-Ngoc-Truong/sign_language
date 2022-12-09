@@ -40,34 +40,40 @@ def word_to_char( text =str()):
 
 def char_to_word():
     input_text = [""]
+    input_string = ""
+    print("input string: ", input_string)
+
     while True:
-        input_string = ""
         input_char = input()
+
         if input_char == "exit":
             break
-        for char in input_char:
-            # get last char
 
-            last_char = input_text[-1]
-            print("last char: ", last_char)
+        char = input_char[0]
+        # get last char
 
-            # Check w and ^
-            if char == "w":
-                if last_char in dict_voxel_rau:
-                    input_text[-1] = dict_voxel_rau[last_char]
+        last_char = input_text[-1]
+        print("last char: ", last_char)
 
-            elif char == "^":
-                if last_char in dict_voxel_mu:
-                    input_text[-1] = dict_voxel_mu[last_char]
-            elif char in list_sign:
-                id = list_sign.index(char)
-                print("dau id:", id)
-                if last_char in list_dau:
-                    id_char = list_dau.find(last_char)
-                    print("last char id:", id_char)
-                    input_text[-1] = list_dau[id_char + id + 1]
-            else:
-                input_text.append(char)
+
+        # Check w and ^
+        if char == "w":
+            if last_char in dict_voxel_rau:
+                input_text[-1] = dict_voxel_rau[last_char]
+
+        elif char == "^":
+            if last_char in dict_voxel_mu:
+                input_text[-1] = dict_voxel_mu[last_char]
+        elif char in list_sign:
+            id = list_sign.index(char)
+            print("dau id:", id)
+            if last_char in list_dau:
+                id_char = list_dau.find(last_char)
+                print("last char id:", id_char)
+                input_text[-1] = list_dau[id_char + id + 1]
+        else:
+            input_text.append(char)
+        input_string =""
         print(input_text)
         for c in input_text:
             input_string += c

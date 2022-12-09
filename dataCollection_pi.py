@@ -5,16 +5,16 @@ from cvzone.HandTrackingModule import HandDetector
 import numpy as np
 import math
 import time
-from picamera2 import Picamera2, Preview
 from folder_and_file import delete_all_file, creat_folder
 from save_image_ui import Ui_MainWindow
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.Qt import Qt
 
-# Use camera of raspberry
-picam2 = Picamera2()
-picam2.configure(picam2.create_preview_configuration(main={"format": 'RGB888', "size": (680, 400)}))
-picam2.start()
+# # Use camera of raspberry
+# from picamera2 import Picamera2, Preview
+# picam2 = Picamera2()
+# picam2.configure(picam2.create_preview_configuration(main={"format": 'RGB888', "size": (680, 400)}))
+# picam2.start()
 
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
@@ -31,8 +31,8 @@ class CollectionImage():
         sys.exit(self.app.exec_())
 
     def init_variable(self):
-        # # Use laptop camera
-        # self.cap = cv2.VideoCapture(0)
+        # Use laptop camera
+        self.cap = cv2.VideoCapture(0)
 
         ask_num = 1
         self.ui.cbbFolder.addItems(labels)
@@ -79,11 +79,11 @@ class CollectionImage():
 
     def save_img(self):
         self.saving_img = True
-        print("button save is press!")
+        # print("button save is press!")
 
     def stop_save_img(self):
         self.saving_img = False
-        print("button save is release!")
+        # print("button save is release!")
 
     def delete_img(self, bnt_select):
         del_confirm =  bnt_select.text()
@@ -105,12 +105,13 @@ class CollectionImage():
                 # print("find_hand_en: ",self.find_hand_en)
                 if self.exit:
                     break
-                # Use camera Pi
-                img = picam2.capture_array()
-                self.img_path = os.path.join(self.train_path, self.ui.cbbFolder.currentText())
+                # # Use camera Pi
+                # img = picam2.capture_array()
 
-                # # Use camera laptop
-                # success, img = self.cap.read()
+                # Use camera laptop
+                success, img = self.cap.read()
+
+                self.img_path = os.path.join(self.train_path, self.ui.cbbFolder.currentText())
 
                 # print("capture...")
 
@@ -127,6 +128,7 @@ class CollectionImage():
 
                             imgWhite = np.ones((imgSize, imgSize, 3), np.uint8)* 255
                             if (x - offset) > 0 and (y- offset) > 0:
+                                haveHand = True
                                 imgCrop = img[y- offset:y+ h+ offset, x-offset:x+ w+ offset]
                                 imgCropShape = imgCrop.shape
                                 # print("img crop shape", imgCropShape)
@@ -137,7 +139,6 @@ class CollectionImage():
                                     wCal = math.ceil(k*w)
                                     # print(wCal)
                                     if wCal < imgSize:
-                                        haveHand = True
                                         imgResize = cv2.resize(imgCrop, (wCal, imgSize))
                                         imgResizeShape = imgResize.shape
                                         # print("img resize shape:", imgResizeShape)
