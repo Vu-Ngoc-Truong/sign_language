@@ -17,10 +17,11 @@ HOME = os.path.expanduser('~')
 import threading
 #######################
 dir_path = os.path.dirname(os.path.realpath(__file__))
+
+# Use raspberry pi camera #########################################
 from picamera2 import Picamera2, Preview
 
 picam2 = Picamera2()
-# picam2.start_preview(Preview.QTGL)
 picam2.configure(picam2.create_preview_configuration(main={"format": 'RGB888', "size": (640, 370)}))
 picam2.start()
 
@@ -44,9 +45,10 @@ class OpenCV_Display():
         self.ui.rbt_audio_en.clicked.connect(self.mute)
         self.ui.btnReply.clicked.connect(self.reply_sign)
         self.hand_detect = HandDetect()
-        self.labels_detail =  ["A", "B", "C", "D", "E", "G", "H", "I", "L", "M", "N", "I Love You", "Dấu mũ", "Huyền", "Sắc","Đ", "T", "O"]
+        self.labels_detail =  ['A','B','C','D','Đ','E','G','H','I','K','L','M','N','O','P','Q','R','S','T','U','V','X','Y',"Mũ","Râu","Sắc","Huyền","Ngã","Nặng","Cách","Chấm", "Xin chào","Tôi yêu bạn"]
         self.language = 'vi'
         self.video_enable = True
+        self.last_indexs = ""
         self.dict_image_name = {"'": "sac", "`": "huyen","?": "hoi", "~": "nga", "*": "nang", "w": "rau", "^": "mu", "đ":"_d"}
 
 
@@ -61,8 +63,7 @@ class OpenCV_Display():
             self.ui.btnStart.setText("Stop")
         else:
             self.ui.btnStart.setText("Start")
-
-        self.last_indexs = ""
+            self.last_indexs = ""
         while self.show_video and self.video_enable:
             if self.exit:
                 print("exit cmd")
@@ -75,19 +76,26 @@ class OpenCV_Display():
                 if self.audio_en:
                     text_to_speech(self.labels_detail[indexs])
             img = cv2.resize(img,(640,370))
-            # cv2.imshow("picture",img)
-            # cv2.destroyWindow("picture")
+            cv2.imshow("picture",img)
+            cv2.destroyWindow("picture")
             # print(type(img))
+
             self.image = QtGui.QImage(img, img.shape[1], img.shape[0], QtGui.QImage.Format_RGB888).rgbSwapped() #self.image.shape[1], self.image.shape[0]
             self.ui.txtImage.setPixmap(QtGui.QPixmap.fromImage(self.image))
+
+            # t2 = threa
+            # ding.Thread(target=self.video_display, args=(img,))
+            # t2.start()
+            # t2.join()
             key = cv2.waitKey(1)
+            # self.ui.txtImage.setText("")
             if key == ord("q"):
                 break
         self.ui.txtImage.setText("PAUSE!")
 
+    # def video_display(self, img):
 
-        # t2 = threading.Thread(target=video_display, args=())
-        # t2.start()
+
         # img = self.hand_detect.read_sign()
         # print(img.shape)
 
@@ -162,28 +170,22 @@ class OpenCV_Display():
 class HandDetect():
     def __init__(self):
         self.detector = HandDetector(maxHands=2)
+        dir_path = os.path.dirname(os.path.realpath(__file__))
         self.classifier = Classifier(dir_path+ "/model/keras_model.h5", dir_path + "/model/labels.txt")
         self.offset = 20
         self.imgSize = 224
         self.threshold = 0.97
-        self.labels =  ["A", "B", "C", "D", "E", "G", "H", "I", "L", "M", "N", "ILY", "^", "HUYEN", "SAC","_D", "T", "O"]
-        # use camera laptop
+        self.labels =  ['A','B','C','D','_D','E','G','H','I','K','L','M','N','O','P','Q','R','S','T','U','V','X','Y',"^","Rau","'","`","~","*","CACH","Cham", "HI","ILY"]
+        # # use camera laptop  ###################################################
         # self.camera_source = LaptopCamera()
 
-        # use camera in rapsberry pi
-        # self.camera_source = PiCamera()
-
-        # self.picam2 = Picamera2()
-        # # self.picam2.start_preview(Preview.QTGL)
-        # self.picam2.configure(self.picam2.create_preview_configuration(main={"format": 'RGB888', "size": (640, 360)}))
-        # self.picam2.start()
-
     def read_sign(self):
-        # Use camera in laptop
+        # # Use camera in laptop  ################################################
         # success, img = self.camera_source.cap.read()
 
-        # Use camera in raspberry pi
+        # Use camera in raspberry pi #########################################
         img = picam2.capture_array()
+
         # print("capture")
         imgOutput = img.copy()
         hands, img = self.detector.findHands(img)
@@ -213,6 +215,8 @@ class HandDetect():
                             # print("img resize shape:", imgResizeShape)
                             wGap = math.ceil((self.imgSize-wCal)/2)
                             imgWhite[:, wGap:wCal + wGap] = imgResize
+                            # imgWhite  = cv2.cvtColor(imgWhite, cv2.COLOR_BGR2RGB)
+                            # cv2.imshow("hand1",imgWhite)
                             prediction, index = self.classifier.getPrediction(imgWhite, draw=False)
                             print(prediction, index)
                         else:
@@ -224,6 +228,9 @@ class HandDetect():
                             # print("img resize shape:", imgResizeShape)
                             hGap = math.ceil((self.imgSize-hCal)/2)
                             imgWhite[hGap:hCal + hGap, :] = imgResize
+                            # imgWhite  = cv2.cvtColor(imgWhite, cv2.COLOR_BGR2RGB)
+                            # cv2.imshow("hand1",imgWhite)
+
                             prediction, index = self.classifier.getPrediction(imgWhite, draw=False)
 
                         if prediction[index] > self.threshold :

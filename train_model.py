@@ -4,10 +4,11 @@ from tensorflow import keras
 from PIL import Image
 import glob
 import time
+import cv2
 
 training_images = []
 training_labels = []
-labels =  ["A", "B", "C", "D", "_D", "E"]
+labels =  ["A", "B", "C", "D", "Đ", "E"]
 file_label = 0
 
 for file_name in glob.glob(r'data/*/*.jpg'): #assuming all jpg
@@ -16,8 +17,10 @@ for file_name in glob.glob(r'data/*/*.jpg'): #assuming all jpg
     for id in range(len(labels)):
         if str_label == labels[id] :
             file_label = id
-    im = Image.open(file_name)
-    im_arr = np.array(im)
+    # im = Image.open(file_name)
+    im = cv2.imread(file_name)
+    im_arr = cv2.cvtColor(im, cv2.COLOR_BGR2GRAY)
+    # im_arr = np.array(im_gray)
     normalized_image_array = (im_arr.astype(np.float32) / 127.0) - 1
     training_images.append(normalized_image_array)
     training_labels.append(file_label)
@@ -40,7 +43,7 @@ model.compile(optimizer = tf.keras.optimizers.Adam(),
                 loss = 'sparse_categorical_crossentropy',
                 metrics=['accuracy'])
 
-model.fit(training_images, training_labels, epochs=10)
+model.fit(training_images, training_labels, epochs=5)
 model.save("model/my_h5_model.h5")
 # imgTest = np.array(Image.open("data1/test/1.jpg"))
 # model.predict(imgTest)
