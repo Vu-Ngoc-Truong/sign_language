@@ -143,8 +143,12 @@ class OpenCV_Display():
         try:
             user_talk = listen_audio(self.language).lower()
             get_anwer_ok = False
-            t1 = threading.Thread(target=show_image, args=(user_talk,))
-            t1.start()
+            if user_talk == "none":
+                print("Không nghe được câu nói!")
+                text_to_speech("Xin lỗi chúng tôi không nghe được bạn nói gì.")
+            else:
+                t1 = threading.Thread(target=show_image, args=(user_talk,))
+                t1.start()
             self.video_enable = True
 
 
