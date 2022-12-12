@@ -19,12 +19,16 @@ from collections import Counter
 #######################
 dir_path = os.path.dirname(os.path.realpath(__file__))
 
-# Use raspberry pi camera #########################################
-from picamera2 import Picamera2, Preview
+# select camera source
+use_picam2 = True
 
-picam2 = Picamera2()
-picam2.configure(picam2.create_preview_configuration(main={"format": 'RGB888', "size": (640, 370)}))
-picam2.start()
+if use_picam2:
+    # Use raspberry pi camera #########################################
+    from picamera2 import Picamera2, Preview
+
+    picam2 = Picamera2()
+    picam2.configure(picam2.create_preview_configuration(main={"format": 'RGB888', "size": (640, 370)}))
+    picam2.start()
 
 class OpenCV_Display():
     def __init__(self):
@@ -85,7 +89,7 @@ class OpenCV_Display():
                 print("counter: ", self.count_label)
 
             # Doc nhan dien cua 15 anh
-            if self.count_label > 6:
+            if self.count_label > 8:
                 # Lay ky tu xuat hien nhieu nhat
                 ct = Counter(self.result_list)
                 print(ct)
@@ -192,7 +196,7 @@ class OpenCV_Display():
                 self.ui.txtImage.setPixmap(QtGui.QPixmap.fromImage(img_resize))
             #     print("Hien thi anh")
             #     input()
-                time.sleep(1.5)
+                time.sleep(1.0)
             self.ui.txtResult.setText("")
             self.ui.txtImage.setText("Done!")
 
@@ -227,24 +231,29 @@ class OpenCV_Display():
 
 class HandDetect():
     def __init__(self):
+        global use_picam2
         self.detector = HandDetector(maxHands=2)
         dir_path = os.path.dirname(os.path.realpath(__file__))
         self.classifier = Classifier(dir_path+ "/model/keras_model.h5", dir_path + "/model/labels.txt")
         self.offset = 20
         self.imgSize = 224
-        self.threshold = 0.6
+        self.threshold = 0.8
         self.labels =  ['A','B','C','D','E','H','I','O','T','U','Y','L',"^","W","'","`","SP","*"]
         # self.labels =  ['A','B','C','D','_D','E','G','H','I','K','L','M','N','O','P','Q','R','S','T','U','V','X','Y',"^","Rau","'","`","~","*","CACH","Cham", "HI","ILY"]
 
-        # # use camera laptop  ###################################################
-        # self.camera_source = LaptopCamera()
+        if not use_picam2:
+            # use camera laptop  ###################################################
+            self.camera_source = LaptopCamera()
 
     def read_sign(self):
-        # # Use camera in laptop  ################################################
-        # success, img = self.camera_source.cap.read()
+        global use_picam2
+        if not use_picam2:
+            # Use camera in laptop  ################################################
+            success, img = self.camera_source.cap.read()
 
-        # Use camera in raspberry pi #########################################
-        img = picam2.capture_array()
+        if use_picam2:
+            # Use camera in raspberry pi #########################################
+            img = picam2.capture_array()
 
         # print("capture")
         imgOutput = img.copy()
