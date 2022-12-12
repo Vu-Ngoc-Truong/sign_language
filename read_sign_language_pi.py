@@ -19,12 +19,12 @@ from collections import Counter
 #######################
 dir_path = os.path.dirname(os.path.realpath(__file__))
 
-# # Use raspberry pi camera #########################################
-# from picamera2 import Picamera2, Preview
+# Use raspberry pi camera #########################################
+from picamera2 import Picamera2, Preview
 
-# picam2 = Picamera2()
-# picam2.configure(picam2.create_preview_configuration(main={"format": 'RGB888', "size": (640, 370)}))
-# picam2.start()
+picam2 = Picamera2()
+picam2.configure(picam2.create_preview_configuration(main={"format": 'RGB888', "size": (640, 370)}))
+picam2.start()
 
 class OpenCV_Display():
     def __init__(self):
@@ -234,15 +234,16 @@ class HandDetect():
         self.threshold = 0.6
         self.labels =  ['A','B','C','D','E','H','I','O','T','U','Y','L',"^","W","'","`","SP","*"]
         # self.labels =  ['A','B','C','D','_D','E','G','H','I','K','L','M','N','O','P','Q','R','S','T','U','V','X','Y',"^","Rau","'","`","~","*","CACH","Cham", "HI","ILY"]
-        # use camera laptop  ###################################################
-        self.camera_source = LaptopCamera()
+
+        # # use camera laptop  ###################################################
+        # self.camera_source = LaptopCamera()
 
     def read_sign(self):
-        # Use camera in laptop  ################################################
-        success, img = self.camera_source.cap.read()
+        # # Use camera in laptop  ################################################
+        # success, img = self.camera_source.cap.read()
 
-        # # Use camera in raspberry pi #########################################
-        # img = picam2.capture_array()
+        # Use camera in raspberry pi #########################################
+        img = picam2.capture_array()
 
         # print("capture")
         imgOutput = img.copy()
