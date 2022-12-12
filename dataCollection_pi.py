@@ -10,11 +10,11 @@ from save_image_ui import Ui_MainWindow
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.Qt import Qt
 
-# Use camera of raspberry
-from picamera2 import Picamera2, Preview
-picam2 = Picamera2()
-picam2.configure(picam2.create_preview_configuration(main={"format": 'RGB888', "size": (680, 400)}))
-picam2.start()
+# # Use camera of raspberry #####################################################
+# from picamera2 import Picamera2, Preview
+# picam2 = Picamera2()
+# picam2.configure(picam2.create_preview_configuration(main={"format": 'RGB888', "size": (680, 400)}))
+# picam2.start()
 
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
@@ -31,7 +31,7 @@ class CollectionImage():
         sys.exit(self.app.exec_())
 
     def init_variable(self):
-        # Use laptop camera
+        # Use laptop camera ####################################################
         self.cap = cv2.VideoCapture(0)
 
         ask_num = 1
@@ -105,11 +105,11 @@ class CollectionImage():
                 # print("find_hand_en: ",self.find_hand_en)
                 if self.exit:
                     break
-                # Use camera Pi
-                img = picam2.capture_array()
+                # # Use camera Pi ##############################################
+                # img = picam2.capture_array()
 
-                # # Use camera laptop
-                # success, img = self.cap.read()
+                # Use camera laptop  #######################################
+                success, img = self.cap.read()
 
                 self.img_path = os.path.join(self.train_path, self.ui.cbbFolder.currentText())
 

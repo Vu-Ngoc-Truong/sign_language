@@ -11,19 +11,20 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.Qt import Qt
 from video_gui import Ui_MainWindow
 from robot_camera import LaptopCamera , PiCamera
-from convert_word import word_to_char
+from convert_word import word_to_char, char_to_word
 import os
 HOME = os.path.expanduser('~')
 import threading
+from collections import Counter
 #######################
 dir_path = os.path.dirname(os.path.realpath(__file__))
 
-# Use raspberry pi camera #########################################
-from picamera2 import Picamera2, Preview
+# # Use raspberry pi camera #########################################
+# from picamera2 import Picamera2, Preview
 
-picam2 = Picamera2()
-picam2.configure(picam2.create_preview_configuration(main={"format": 'RGB888', "size": (640, 370)}))
-picam2.start()
+# picam2 = Picamera2()
+# picam2.configure(picam2.create_preview_configuration(main={"format": 'RGB888', "size": (640, 370)}))
+# picam2.start()
 
 class OpenCV_Display():
     def __init__(self):
@@ -45,7 +46,9 @@ class OpenCV_Display():
         self.ui.rbt_audio_en.clicked.connect(self.mute)
         self.ui.btnReply.clicked.connect(self.reply_sign)
         self.hand_detect = HandDetect()
-        self.labels_detail =  ['A','B','C','D','Đ','E','G','H','I','K','L','M','N','O','P','Q','R','S','T','U','V','X','Y',"Mũ","Râu","Sắc","Huyền","Ngã","Nặng","Cách","Chấm", "Xin chào","Tôi yêu bạn"]
+        self.labels_detail =  ['a','b','c','d','e','h','i','o','t','u','y','l',"Mũ","Râu","Sắc","Huyền","Cách","Chấm"]
+        self.labels_char =    ['a','b','c','d','e','h','i','o','t','u','y','l',"^","w","'","`"," ","."]
+        # self.labels_detail =  ['A','B','C','D','Đ','E','G','H','I','K','L','M','N','O','P','Q','R','S','T','U','V','X','Y',"Mũ","Râu","Sắc","Huyền","Ngã","Nặng","Cách","Chấm", "Xin chào","Tôi yêu bạn"]
         self.language = 'vi'
         self.video_enable = True
         self.last_indexs = ""
@@ -64,17 +67,76 @@ class OpenCV_Display():
         else:
             self.ui.btnStart.setText("Start")
             self.last_indexs = ""
+        self.result_list = []
+        self.count_label = 0
+        self.result_string = ""
+        self.result_string_list = [""]
         while self.show_video and self.video_enable:
             if self.exit:
                 print("exit cmd")
                 break
             img, indexs = self.hand_detect.read_sign()
 
-            if (not indexs == -1) and (not self.last_indexs == indexs):
-                self.last_indexs = indexs
-                self.ui.txtResult.setText(self.labels_detail[indexs])
-                if self.audio_en:
-                    text_to_speech(self.labels_detail[indexs])
+            if (not indexs == -1):
+
+                # Luu ket qua vao list result
+                self.result_list.append(indexs)
+                self.count_label += 1
+                print("counter: ", self.count_label)
+
+            # Doc nhan dien cua 15 anh
+            if self.count_label > 10:
+                # Lay ky tu xuat hien nhieu nhat
+                ct = Counter(self.result_list)
+                print(ct)
+                print("==================================================")
+                # Counter({4: 116, 3: 8, 5: 7})
+
+                # Dat lai so dem va list ket qua
+                self.count_label = 0
+                self.result_list.clear()
+
+                # Lay gia tri xuat hien nhieu nhat
+                most_index = ct.most_common()[0][0]
+
+                # Neu gia tri moi khac voi gia tri cu
+                if not most_index == self.last_indexs:
+
+                    # Hien thi va phat am ky tu doc duoc
+                    self.last_indexs = most_index
+                    str_result =  char_to_word(self.result_string_list[-1], self.labels_char[most_index])
+                    print("str result: ", str_result)
+                    # bo ky tu cuoi
+                    if len(str_result) == 1:
+                        self.result_string_list[-1] = str_result[0]
+                    else:
+                        self.result_string_list[-1] = str_result[0]
+                        self.result_string_list.append(str_result[1])
+                    print("list string:", self.result_string_list)
+
+
+                    if self.audio_en:
+                        try:
+                            text_to_speech(self.labels_detail[most_index])
+                        except:
+                            print("Loi phat am ky tu trong thu vien")
+
+                    input_string =""
+                    for c in self.result_string_list:
+                        input_string += c
+                    print("input string: ",input_string)
+                    self.ui.txtResult.setText(input_string)
+                    # Gap dau "." la het cau
+                    if self.labels_char[most_index] == ".":
+                        # phat ca cau
+                        try:
+                            text_to_speech(input_string)
+                            # self.ui.txtResult.setText(input_string)
+                        except:
+                            print("Loi phat am ky tu trong thu vien")
+                        # Dat lai chuoi
+                        self.result_string_list = [""]
+
             img = cv2.resize(img,(640,370))
             cv2.imshow("picture",img)
             cv2.destroyWindow("picture")
@@ -83,8 +145,7 @@ class OpenCV_Display():
             self.image = QtGui.QImage(img, img.shape[1], img.shape[0], QtGui.QImage.Format_RGB888).rgbSwapped() #self.image.shape[1], self.image.shape[0]
             self.ui.txtImage.setPixmap(QtGui.QPixmap.fromImage(self.image))
 
-            # t2 = threa
-            # ding.Thread(target=self.video_display, args=(img,))
+            # t2 = threading.Thread(target=self.video_display, args=(img,))
             # t2.start()
             # t2.join()
             key = cv2.waitKey(1)
@@ -94,10 +155,6 @@ class OpenCV_Display():
         self.ui.txtImage.setText("PAUSE!")
 
     # def video_display(self, img):
-
-
-        # img = self.hand_detect.read_sign()
-        # print(img.shape)
 
 
     def exit_app(self):
@@ -174,17 +231,18 @@ class HandDetect():
         self.classifier = Classifier(dir_path+ "/model/keras_model.h5", dir_path + "/model/labels.txt")
         self.offset = 20
         self.imgSize = 224
-        self.threshold = 0.97
-        self.labels =  ['A','B','C','D','_D','E','G','H','I','K','L','M','N','O','P','Q','R','S','T','U','V','X','Y',"^","Rau","'","`","~","*","CACH","Cham", "HI","ILY"]
-        # # use camera laptop  ###################################################
-        # self.camera_source = LaptopCamera()
+        self.threshold = 0.6
+        self.labels =  ['A','B','C','D','E','H','I','O','T','U','Y','L',"^","W","'","`","SP","*"]
+        # self.labels =  ['A','B','C','D','_D','E','G','H','I','K','L','M','N','O','P','Q','R','S','T','U','V','X','Y',"^","Rau","'","`","~","*","CACH","Cham", "HI","ILY"]
+        # use camera laptop  ###################################################
+        self.camera_source = LaptopCamera()
 
     def read_sign(self):
-        # # Use camera in laptop  ################################################
-        # success, img = self.camera_source.cap.read()
+        # Use camera in laptop  ################################################
+        success, img = self.camera_source.cap.read()
 
-        # Use camera in raspberry pi #########################################
-        img = picam2.capture_array()
+        # # Use camera in raspberry pi #########################################
+        # img = picam2.capture_array()
 
         # print("capture")
         imgOutput = img.copy()
@@ -215,10 +273,11 @@ class HandDetect():
                             # print("img resize shape:", imgResizeShape)
                             wGap = math.ceil((self.imgSize-wCal)/2)
                             imgWhite[:, wGap:wCal + wGap] = imgResize
-                            # imgWhite  = cv2.cvtColor(imgWhite, cv2.COLOR_BGR2RGB)
+                            imgWhite  = cv2.cvtColor(imgWhite, cv2.COLOR_BGR2RGB)
                             # cv2.imshow("hand1",imgWhite)
                             prediction, index = self.classifier.getPrediction(imgWhite, draw=False)
-                            print(prediction, index)
+                            # print(prediction, index)
+                            print("index_w: ", index, prediction[index], sep="\t")
                         else:
                             k = self.imgSize/w
                             hCal = math.ceil(k*h)
@@ -228,10 +287,11 @@ class HandDetect():
                             # print("img resize shape:", imgResizeShape)
                             hGap = math.ceil((self.imgSize-hCal)/2)
                             imgWhite[hGap:hCal + hGap, :] = imgResize
-                            # imgWhite  = cv2.cvtColor(imgWhite, cv2.COLOR_BGR2RGB)
+                            imgWhite  = cv2.cvtColor(imgWhite, cv2.COLOR_BGR2RGB)
                             # cv2.imshow("hand1",imgWhite)
 
                             prediction, index = self.classifier.getPrediction(imgWhite, draw=False)
+                            print("index_h: ", index, prediction[index], sep="/t")
 
                         if prediction[index] > self.threshold :
                             try:
@@ -243,6 +303,9 @@ class HandDetect():
                                             (x + w+self.offset, y + h+self.offset), (255, 0, 255), 4)
                             except:
                                 pass
+                        else:
+                            label_result = -1
+                            print("Khong dat nguong")
                         # cv2.imshow("ImageCrop", imgCrop)
                         # cv2.imshow("ImageWhite", imgWhite)
         return imgOutput, label_result

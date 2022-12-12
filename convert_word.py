@@ -38,48 +38,60 @@ def word_to_char( text =str()):
 
     return list_char
 
-def char_to_word():
-    input_text = [""]
-    input_string = ""
-    print("input string: ", input_string)
+def char_to_word( end_char, new_char):
+    """ Convert from char to word
+        end_char (list): char in end of string
+        new_char (string): char want to connect with list of string
+        return (string): string
+    """
+    input_text = []
+    input_text.append(end_char)
+    print("input text: ", input_text)
 
-    while True:
-        input_char = input()
+    input_char = new_char
 
-        if input_char == "exit":
-            break
+    char = input_char[0]
+    # get last char
 
-        char = input_char[0]
-        # get last char
+    last_char = input_text[-1]
+    print("last char: ", last_char)
 
-        last_char = input_text[-1]
-        print("last char: ", last_char)
+    # Check w and ^
+    if char == "w":
+        if last_char in dict_voxel_rau:
+            input_text[-1] = dict_voxel_rau[last_char]
 
-
-        # Check w and ^
-        if char == "w":
-            if last_char in dict_voxel_rau:
-                input_text[-1] = dict_voxel_rau[last_char]
-
-        elif char == "^":
-            if last_char in dict_voxel_mu:
-                input_text[-1] = dict_voxel_mu[last_char]
-        elif char in list_sign:
-            id = list_sign.index(char)
-            print("dau id:", id)
-            if last_char in list_dau:
-                id_char = list_dau.find(last_char)
-                print("last char id:", id_char)
-                input_text[-1] = list_dau[id_char + id + 1]
-        else:
-            input_text.append(char)
-        input_string =""
-        print(input_text)
-        for c in input_text:
-            input_string += c
-        print("input string: ",input_string)
-
+    elif char == "^":
+        if last_char in dict_voxel_mu:
+            input_text[-1] = dict_voxel_mu[last_char]
+    elif char in list_sign:
+        id = list_sign.index(char)
+        print("dau id:", id)
+        if last_char in list_dau:
+            id_char = list_dau.find(last_char)
+            print("last char id:", id_char)
+            input_text[-1] = list_dau[id_char + id + 1]
+    else:
+        input_text.append(char)
+    return input_text
 
 if __name__ == '__main__':
     # print(word_to_char(txt))
-    char_to_word()
+    strings = "Ho^m awn"
+    list_string = [""]
+    for char in strings:
+
+        str_result =  char_to_word(list_string[-1], char)
+        print("str result: ", str_result)
+        # bo ky tu cuoi
+        if len(str_result) == 1:
+            list_string[-1] = str_result[0]
+        else:
+            list_string[-1] = str_result[0]
+            list_string.append(str_result[1])
+        print("list string:", list_string)
+    print("list string end :", list_string)
+    input_string =""
+    for c in list_string:
+        input_string += c
+    print("input string: ",input_string)
