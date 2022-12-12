@@ -127,10 +127,11 @@ class OpenCV_Display():
                     print("input string: ",input_string)
                     self.ui.txtResult.setText(input_string)
                     # Gap dau "." la het cau
-                    if self.labels_char[most_index] == ".":
+                    if (self.labels_char[most_index] == ".") or len(self.result_string_list) > 20:
                         # phat ca cau
                         try:
                             text_to_speech(input_string)
+                            self.ui.txtResult.setText("")
                             # self.ui.txtResult.setText(input_string)
                         except:
                             print("Loi phat am ky tu trong thu vien")
