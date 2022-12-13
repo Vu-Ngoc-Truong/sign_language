@@ -50,9 +50,9 @@ class OpenCV_Display():
         self.ui.rbt_audio_en.clicked.connect(self.mute)
         self.ui.btnReply.clicked.connect(self.reply_sign)
         self.hand_detect = HandDetect()
-        self.labels_detail =  ['a','b','c','d','e','h','i','o','t','u','y','l',"Mũ","Râu","Sắc","Huyền","Cách","Chấm"]
-        self.labels_char =    ['a','b','c','d','e','h','i','o','t','u','y','l',"^","w","'","`"," ","."]
-        # self.labels_detail =  ['A','B','C','D','Đ','E','G','H','I','K','L','M','N','O','P','Q','R','S','T','U','V','X','Y',"Mũ","Râu","Sắc","Huyền","Ngã","Nặng","Cách","Chấm", "Xin chào","Tôi yêu bạn"]
+        # self.labels_detail =  ['a','b','c','d','e','h','i','o','t','u','y','l',"Mũ","Râu","Sắc","Huyền","Cách","Chấm"]
+        self.labels_char =    ['a','b','c','d','đ','e','g','h','i','k','l','m','n','o','p','q','r','s','t','u','v','x','y',"^","w","'","`","~","*"," ",".","hi","ily"]
+        self.labels_detail =  ['A','B','C','D','Đ','E','G','H','I','K','L','M','N','O','P','Q','R','S','T','U','V','X','Y',"Mũ","Râu","Sắc","Huyền","Ngã","Nặng","Cách","Chấm", "Xin chào","Tôi yêu bạn"]
         self.language = 'vi'
         self.video_enable = True
         self.last_indexs = ""
@@ -108,14 +108,14 @@ class OpenCV_Display():
 
                     # Hien thi va phat am ky tu doc duoc
                     self.last_indexs = most_index
-                    str_result =  char_to_word(self.result_string_list[-1], self.labels_char[most_index])
+                    str_result =  char_to_word(self.result_string_list[-1], self.labels_char[most_index].lower())
                     print("str result: ", str_result)
                     # bo ky tu cuoi
                     if len(str_result) == 1:
                         self.result_string_list[-1] = str_result[0]
                     else:
                         self.result_string_list[-1] = str_result[0]
-                        self.result_string_list.append(str_result[1])
+                        self.result_string_list.append(str_result[1:])
                     print("list string:", self.result_string_list)
 
 

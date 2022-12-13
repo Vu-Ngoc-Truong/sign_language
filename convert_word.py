@@ -49,8 +49,10 @@ def char_to_word( end_char, new_char):
     print("input text: ", input_text)
 
     input_char = new_char
-
-    char = input_char[0]
+    if input_char == "hi" or input_char == "ily":
+        char = input_char
+    else:
+        char = input_char[0]
     # get last char
 
     last_char = input_text[-1]
