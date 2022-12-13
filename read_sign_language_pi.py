@@ -89,7 +89,7 @@ class OpenCV_Display():
                 print("counter: ", self.count_label)
 
             # Doc nhan dien cua 15 anh
-            if self.count_label > 8:
+            if self.count_label > 4:
                 # Lay ky tu xuat hien nhieu nhat
                 ct = Counter(self.result_list)
                 print(ct)
