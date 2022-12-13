@@ -115,7 +115,7 @@ class OpenCV_Display():
                         self.result_string_list[-1] = str_result[0]
                     else:
                         self.result_string_list[-1] = str_result[0]
-                        self.result_string_list.append(str_result[1:])
+                        self.result_string_list.append(str_result[1])
                     print("list string:", self.result_string_list)
 
 
