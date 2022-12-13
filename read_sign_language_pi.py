@@ -238,8 +238,8 @@ class HandDetect():
         self.offset = 20
         self.imgSize = 224
         self.threshold = 0.8
-        self.labels =  ['A','B','C','D','E','H','I','O','T','U','Y','L',"^","W","'","`","SP","*"]
-        # self.labels =  ['A','B','C','D','_D','E','G','H','I','K','L','M','N','O','P','Q','R','S','T','U','V','X','Y',"^","Rau","'","`","~","*","CACH","Cham", "HI","ILY"]
+        # self.labels =  ['A','B','C','D','E','H','I','O','T','U','Y','L',"^","W","'","`","SP","*"]
+        self.labels =  ['A','B','C','D','_D','E','G','H','I','K','L','M','N','O','P','Q','R','S','T','U','V','X','Y',"^","W","'","`","~","*","SP",".", "HI","ILY"]
 
         if not use_picam2:
             # use camera laptop  ###################################################
