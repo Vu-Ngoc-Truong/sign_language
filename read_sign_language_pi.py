@@ -20,7 +20,7 @@ from collections import Counter
 dir_path = os.path.dirname(os.path.realpath(__file__))
 
 # select camera source
-use_picam2 = True
+use_picam2 = False
 
 if use_picam2:
     # Use raspberry pi camera #########################################
@@ -45,51 +45,109 @@ class OpenCV_Display():
         self.exit = False
         self.show_video = False
         self.audio_en = True
-        self.ui.btnStart.clicked.connect(self.loop)
+        self.have_image = False
+        self.have_img_hand = False
+        self.cv_image = None
+        self.hand_image = None
+
+        self.timer = QtCore.QTimer()
+        self.timer.timeout.connect(self.display_video)
+        self.prev_frame_time = time.time()
+
+        self.timer_hand = QtCore.QTimer()
+        self.timer_hand.timeout.connect(self.loop)
+
+        if not use_picam2:
+            # use camera laptop  ###################################################
+            self.camera_source = LaptopCamera()
+        self.ui.btnStart.clicked.connect(self.start_stop)
         self.ui.btnExit.clicked.connect(self.exit_app)
         self.ui.rbt_audio_en.clicked.connect(self.mute)
         self.ui.btnReply.clicked.connect(self.reply_sign)
         self.hand_detect = HandDetect()
         # self.labels_detail =  ['a','b','c','d','e','h','i','o','t','u','y','l',"Mũ","Râu","Sắc","Huyền","Cách","Chấm"]
-        self.labels_char =    ['a','b','c','d','đ','e','g','h','i','k','l','m','n','o','p','q','r','s','t','u','v','x','y',"^","w","'","`","~","*"," ",".","hi","ily"]
-        self.labels_detail =  ['A','B','C','D','Đ','E','G','H','I','K','L','M','N','O','P','Q','R','S','T','U','V','X','Y',"Mũ","Râu","Sắc","Huyền","Ngã","Nặng","Cách","Chấm", "Xin chào","Tôi yêu bạn"]
+        self.labels_char =    ['a','b','c','d','đ','e','h','i','l','m','n','o','t','u','v','x','y',"^","w","'","`","*"," "]
+        self.labels_detail =  ['A','B','C','D','Đ','E','H','I','L','M','N','O','T','U','V','X','Y',"Mũ","Râu","Sắc","Huyền","Nặng","Cách"]
         self.language = 'vi'
         self.video_enable = True
         self.last_indexs = ""
         self.dict_image_name = {"'": "sac", "`": "huyen","?": "hoi", "~": "nga", "*": "nang", "w": "rau", "^": "mu", "đ":"_d"}
 
+    def display_video(self):
+        global use_picam2
+        if not use_picam2:
+            # Use camera in laptop  ################################################
+            success, img = self.camera_source.cap.read()
+            if not success:
+                print("Can't read video!")
+                return
 
+        if use_picam2:
+            # Use camera in raspberry pi #########################################
+            img = picam2.capture_array()
 
-    def loop(self):
+        self.cv_image = cv2.resize(img,(640,370))
+        self.have_image = True
+        img_display = self.cv_image
+        if self.have_img_hand:
+            img_display = self.hand_image
+        self.image = QtGui.QImage(img_display, img_display.shape[1], img_display.shape[0], QtGui.QImage.Format_RGB888).rgbSwapped() #self.image.shape[1], self.image.shape[0]
+        self.ui.txtImage.setPixmap(QtGui.QPixmap.fromImage(self.image))
+        self.have_img_hand = False
+        # key = cv2.waitKey(1)
+        # Calculating the fps
+        new_frame_time = time.time()
+        fps = 1/(new_frame_time-self.prev_frame_time)
+        self.prev_frame_time = new_frame_time
+        print("fps: ", fps)
 
-        # print("loop start")
-        if not self.video_enable:
-            return
+    def start_stop(self):
         self.show_video = not self.show_video
         if self.show_video:
             self.ui.btnStart.setText("Stop")
+            self.timer.start(10)
+            self.timer_hand.start(10)
+            self.prev_frame_time = time.time()
+            self.result_list = []
+            self.count_label = 0
+            self.result_string = ""
+            self.result_string_list = [""]
         else:
+            # Dung doc tu camera
             self.ui.btnStart.setText("Start")
             self.last_indexs = ""
-        self.result_list = []
-        self.count_label = 0
-        self.result_string = ""
-        self.result_string_list = [""]
-        while self.show_video and self.video_enable:
-            if self.exit:
-                print("exit cmd")
-                break
-            img, indexs = self.hand_detect.read_sign()
+            self.timer.stop()
+            self.timer_hand.stop()
+            self.ui.txtImage.setText("PAUSE!")
+            self.have_image = False
 
+    def loop(self):
+        # print("loop start")
+        if not (self.video_enable and self.have_image):
+            return
+
+        if self.exit:
+            print("exit cmd")
+            self.timer.stop()
+            self.timer_hand.stop()
+
+        indexs = -1
+        # print(self.cv_image.shape)
+        try:
+            self.hand_image, indexs = self.hand_detect.read_sign(self.cv_image)
+            self.have_image = False
+            self.have_img_hand = True
+            # print("indexs: ", indexs)
+            # self.image = QtGui.QImage(self.hand_image, self.hand_image.shape[1], self.hand_image.shape[0], QtGui.QImage.Format_RGB888).rgbSwapped() #self.image.shape[1], self.image.shape[0]
+            # self.ui.txtImage.setPixmap(QtGui.QPixmap.fromImage(self.image))
             if (not indexs == -1):
-
                 # Luu ket qua vao list result
                 self.result_list.append(indexs)
                 self.count_label += 1
                 print("counter: ", self.count_label)
 
             # Doc nhan dien cua 15 anh
-            if self.count_label > 4:
+            if self.count_label > 6:
                 # Lay ky tu xuat hien nhieu nhat
                 ct = Counter(self.result_list)
                 print(ct)
@@ -141,26 +199,9 @@ class OpenCV_Display():
                             print("Loi phat am ky tu trong thu vien")
                         # Dat lai chuoi
                         self.result_string_list = [""]
-
-            img = cv2.resize(img,(640,370))
-            cv2.imshow("picture",img)
-            cv2.destroyWindow("picture")
-            # print(type(img))
-
-            self.image = QtGui.QImage(img, img.shape[1], img.shape[0], QtGui.QImage.Format_RGB888).rgbSwapped() #self.image.shape[1], self.image.shape[0]
-            self.ui.txtImage.setPixmap(QtGui.QPixmap.fromImage(self.image))
-
-            # t2 = threading.Thread(target=self.video_display, args=(img,))
-            # t2.start()
-            # t2.join()
-            key = cv2.waitKey(1)
-            # self.ui.txtImage.setText("")
-            if key == ord("q"):
-                break
-        self.ui.txtImage.setText("PAUSE!")
-
-    # def video_display(self, img):
-
+        except:
+            # print("Loi khi phat hien ban tay")
+            pass
 
     def exit_app(self):
         self.exit = True
@@ -234,31 +275,22 @@ class HandDetect():
         global use_picam2
         self.detector = HandDetector(maxHands=2)
         dir_path = os.path.dirname(os.path.realpath(__file__))
-        self.classifier = Classifier(dir_path+ "/model/keras_model.h5", dir_path + "/model/labels.txt")
+        self.classifier = Classifier(os.path.join(dir_path,"model", "keras_model.h5"), os.path.join(dir_path,"model", "labels.txt"))
         self.offset = 20
         self.imgSize = 224
         self.threshold = 0.5
         # self.labels =  ['A','B','C','D','E','H','I','O','T','U','Y','L',"^","W","'","`","SP","*"]
-        self.labels =  ['A','B','C','D','_D','E','G','H','I','K','L','M','N','O','P','Q','R','S','T','U','V','X','Y',"^","W","'","`","~","*","SP",".", "HI","ILY"]
+        self.labels =  ['A','B','C','D','Đ','E','H','I','L','M','N','O','T','U','V','X','Y',"^","w","'","`","*","SP"]
+        print("hand detect init done")
 
-        if not use_picam2:
-            # use camera laptop  ###################################################
-            self.camera_source = LaptopCamera()
-
-    def read_sign(self):
-        global use_picam2
-        if not use_picam2:
-            # Use camera in laptop  ################################################
-            success, img = self.camera_source.cap.read()
-
-        if use_picam2:
-            # Use camera in raspberry pi #########################################
-            img = picam2.capture_array()
-
+    def read_sign(self, img):
         # print("capture")
+        # print("have image")
         imgOutput = img.copy()
+        # print("read sign: ", img.shape)
         hands, img = self.detector.findHands(img)
         label_result = -1
+        # print("find hand")
         if hands:
             for _hand in hands:
                 if _hand['type'] == 'Right':
@@ -275,6 +307,7 @@ class HandDetect():
                         # print("img crop shape", imgCropShape)
                         # print(x,y,w,h)
                         aspectRatio = h/w
+
                         if aspectRatio > 1:
                             k = self.imgSize/h
                             wCal = math.ceil(k*w)
@@ -317,8 +350,9 @@ class HandDetect():
                         else:
                             label_result = -1
                             print("Khong dat nguong")
-                        # cv2.imshow("ImageCrop", imgCrop)
-                        # cv2.imshow("ImageWhite", imgWhite)
+                    # print("indexs: ", label_result)
+        # cv2.imshow("hand",imgOutput)
+        # cv2.waitKey(1)
         return imgOutput, label_result
 
 if __name__ == '__main__':

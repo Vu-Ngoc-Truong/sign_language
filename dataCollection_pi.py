@@ -11,7 +11,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.Qt import Qt
 
 # select camera source
-use_picam2 = True
+use_picam2 = False
 
 if use_picam2:
     # Use camera of raspberry #####################################################
