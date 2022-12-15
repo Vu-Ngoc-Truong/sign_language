@@ -96,10 +96,10 @@ class OpenCV_Display():
         self.have_img_hand = False
         # key = cv2.waitKey(1)
         # Calculating the fps
-        new_frame_time = time.time()
-        fps = 1/(new_frame_time-self.prev_frame_time)
-        self.prev_frame_time = new_frame_time
-        print("fps: ", fps)
+        # new_frame_time = time.time()
+        # fps = 1/(new_frame_time-self.prev_frame_time)
+        # self.prev_frame_time = new_frame_time
+        # print("fps: ", fps)
 
     def start_stop(self):
         self.show_video = not self.show_video
