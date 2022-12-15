@@ -105,8 +105,8 @@ class OpenCV_Display():
         self.show_video = not self.show_video
         if self.show_video:
             self.ui.btnStart.setText("Stop")
-            self.timer.start(10)
-            self.timer_hand.start(10)
+            self.timer.start()
+            self.timer_hand.start()
             self.prev_frame_time = time.time()
             self.result_list = []
             self.count_label = 0
