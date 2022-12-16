@@ -71,7 +71,7 @@ class OpenCV_Display():
         self.video_enable = True
         self.last_indexs = ""
 
-        self.count_threshold = 3  # số ảnh cần đọc được để quyết định
+        self.count_threshold = 4  # số ảnh cần đọc được để quyết định
         self.labels_char =    ['a','b','c','d','đ','e','h','i','l','m','n','o','t','u','v','x','y',"^","w","'","`"," "]
         # self.labels_speech =  ['A','B','C','D','Đ','E','H','I','L','M','N','O','T','U','V','X','Y',"Mũ","Râu","Sắc","Huyền","Cách"]
         self.dict_labels_word = {"_d":'đ', 'sp':" "}
