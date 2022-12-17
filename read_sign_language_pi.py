@@ -20,7 +20,7 @@ from collections import Counter
 dir_path = os.path.dirname(os.path.realpath(__file__))
 
 # select camera source
-use_picam2 = True
+use_picam2 = False
 
 if use_picam2:
     # Use raspberry pi camera #########################################
@@ -341,7 +341,7 @@ class HandDetect():
                             # print("img resize shape:", imgResizeShape)
                             wGap = math.ceil((self.imgSize-wCal)/2)
                             imgWhite[:, wGap:wCal + wGap] = imgResize
-                            imgWhite  = cv2.cvtColor(imgWhite, cv2.COLOR_BGR2RGB)
+                            # imgWhite  = cv2.cvtColor(imgWhite, cv2.COLOR_BGR2RGB)
                             # cv2.imshow("hand1",imgWhite)
 
                             # predict model
@@ -362,7 +362,7 @@ class HandDetect():
                             # print("img resize shape:", imgResizeShape)
                             hGap = math.ceil((self.imgSize-hCal)/2)
                             imgWhite[hGap:hCal + hGap, :] = imgResize
-                            imgWhite  = cv2.cvtColor(imgWhite, cv2.COLOR_BGR2RGB)
+                            # imgWhite  = cv2.cvtColor(imgWhite, cv2.COLOR_BGR2RGB)
                             # cv2.imshow("hand1",imgWhite)
 
                             # predict model
@@ -395,8 +395,8 @@ class HandDetect():
                         else:
                             print("Khong dat nguong")
                     # print("indexs: ", label_result)
-        # cv2.imshow("hand",imgOutput)
-        # cv2.waitKey(1)
+        cv2.imshow("hand",imgWhite)
+        cv2.waitKey(1)
         return imgOutput, label_result
 
 if __name__ == '__main__':

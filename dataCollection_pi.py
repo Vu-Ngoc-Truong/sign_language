@@ -11,7 +11,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.Qt import Qt
 
 # select camera source
-use_picam2 = True
+use_picam2 = False
 
 if use_picam2:
     # Use camera of raspberry #####################################################
@@ -44,7 +44,7 @@ class CollectionImage():
         self.find_hand_en = True
         self.saving_img = False
         self.exit = False
-        self.train_path = os.path.join(dir_path,"train")
+        self.train_path = os.path.join(dir_path,"image")
 
         self.msg_box_name = QtWidgets.QMessageBox()
         # Xử lý sự kiện
@@ -124,6 +124,7 @@ class CollectionImage():
 
                 self.ui.txtImgcount.setText(str(len(os.listdir(self.img_path))))
 
+                img_save = img.copy()
                 hands, img = detector.findHands(img)
                 if hands:
                     for _hand in hands:
@@ -136,7 +137,7 @@ class CollectionImage():
                             imgWhite = np.ones((imgSize, imgSize, 3), np.uint8)* 255
                             if (x - offset) > 0 and (y- offset) > 0:
                                 haveHand = True
-                                imgCrop = img[y- offset:y+ h+ offset, x-offset:x+ w+ offset]
+                                imgCrop = img_save[y- offset:y+ h+ offset, x-offset:x+ w+ offset]
                                 imgCropShape = imgCrop.shape
                                 # print("img crop shape", imgCropShape)
                                 # print(x,y,w,h)
@@ -162,7 +163,7 @@ class CollectionImage():
                                         hGap = math.ceil((imgSize-hCal)/2)
                                         imgWhite[hGap:hCal + hGap, :] = imgResize
 
-                                # cv2.imshow("Picture crop", imgCrop)
+                            #     cv2.imshow("Picture crop", imgCrop)
                             # cv2.imshow("Picture White", imgWhite)
                             qt_image = QtGui.QImage(imgWhite, imgWhite.shape[1], imgWhite.shape[0], QtGui.QImage.Format_RGB888).rgbSwapped() #self.image.shape[1], self.image.shape[0]
                             self.ui.txtImgHand.setPixmap(QtGui.QPixmap.fromImage(qt_image))
@@ -170,7 +171,7 @@ class CollectionImage():
 
                 imgShow = cv2.resize(img, (450,300))
                 cv2.imshow("Picture", imgShow)
-                cv2.moveWindow("Picture",350,50)
+                # cv2.moveWindow("Picture",350,50)
                 key = cv2.waitKey(1)
                 if self.saving_img  and haveHand:
                     counter +=1

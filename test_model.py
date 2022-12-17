@@ -6,8 +6,10 @@ import glob
 from cvzone.ClassificationModule import Classifier
 from collections import Counter
 import cv2
-
-classifier = Classifier("model/my_keras_model.h5", "model/my_labels.txt")
+import os
+dir_path = os.path.dirname(os.path.realpath(__file__))
+model_path = os.path.join(dir_path, "model")
+classifier = Classifier(os.path.join(model_path,"keras_model1.h5"), os.path.join(model_path,"labels1.txt"))
 # model =  keras.models.load_model("model/my_h5_model.h5")
 
 def read_labels(labelsPath):
@@ -35,7 +37,7 @@ def read_labels(labelsPath):
 data = np.ndarray(shape=(1, 224, 224, 3), dtype=np.float32)
 # list_index = [4, 4, 4, 4, 4, 4, 4, 5, 4, 4, 4, 5, 4, 4, 4, 4, 3, 4, 5, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 3, 4, 3, 4, 4, 4, 3, 4, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 5, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 5, 3, 4, 4, 4, 4, 4, 4, 4, 5, 3, 4, 4, 4, 4, 5, 4, 4, 4, 4, 4]
 list_index = []
-for file_name in glob.glob(r'train/B/*.jpg'): #assuming all jpg
+for file_name in glob.glob(r'test/E/*.jpg'): #assuming all jpg
 
     imgTest = np.array(Image.open(file_name))
     # print(imgTest.shape)
