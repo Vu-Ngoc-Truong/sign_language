@@ -16,6 +16,8 @@ import os
 HOME = os.path.expanduser('~')
 import threading
 from collections import Counter
+from image_train_knn import image_encoding, predict
+
 #######################
 dir_path = os.path.dirname(os.path.realpath(__file__))
 
@@ -288,22 +290,24 @@ class HandDetect():
         global use_picam2
         self.detector = HandDetector(maxHands=2)
         dir_path = os.path.dirname(os.path.realpath(__file__))
-        self.classifier  = Classifier(os.path.join(dir_path,"model", "keras_model.h5"),  os.path.join(dir_path,"model", "labels.txt"))
-        self.classifier1 = Classifier(os.path.join(dir_path,"model", "keras_model1.h5"), os.path.join(dir_path,"model", "labels1.txt"))
-        self.classifier2 = Classifier(os.path.join(dir_path,"model", "keras_model2.h5"), os.path.join(dir_path,"model", "labels2.txt"))
-        self.classifier3 = Classifier(os.path.join(dir_path,"model", "keras_model3.h5"), os.path.join(dir_path,"model", "labels3.txt"))
-        self.list_classifier = [self.classifier, self.classifier1, self.classifier2, self.classifier3]
+
+        self.model_path =  os.path.join(dir_path,"model", "trained_knn_model.clf")
+        # self.classifier  = Classifier(os.path.join(dir_path,"model", "keras_model.h5"),  os.path.join(dir_path,"model", "labels.txt"))
+        # self.classifier1 = Classifier(os.path.join(dir_path,"model", "keras_model1.h5"), os.path.join(dir_path,"model", "labels1.txt"))
+        # self.classifier2 = Classifier(os.path.join(dir_path,"model", "keras_model2.h5"), os.path.join(dir_path,"model", "labels2.txt"))
+        # self.classifier3 = Classifier(os.path.join(dir_path,"model", "keras_model3.h5"), os.path.join(dir_path,"model", "labels3.txt"))
+        # self.list_classifier = [self.classifier, self.classifier1, self.classifier2, self.classifier3]
 
         self.offset = 20
         self.imgSize = 224
         self.threshold = 0.99
         # self.labels =  ['A','B','C','D','E','H','I','O','T','U','Y','L',"^","W","'","`","SP","*"]
         # self.labels =  ['A','B','C','D','_D','E','H','I','L','M','N','O','T','U','V','X','Y',"^","W","'","`","SP"]
-        self.labels  =  ['A','B','C','D']
-        self.labels1 =  ['_D','E','H','I','L','M']
-        self.labels2 =  ['N', 'O','T','U','V','X']
-        self.labels3 =  ['Y',"^","W","'","`","SP"]
-        self.list_labels = [self.labels, self.labels1, self.labels2, self.labels3]
+        # self.labels  =  ['A','B','C','D']
+        # self.labels1 =  ['_D','E','H','I','L','M']
+        # self.labels2 =  ['N', 'O','T','U','V','X']
+        # self.labels3 =  ['Y',"^","W","'","`","SP"]
+        # self.list_labels = [self.labels, self.labels1, self.labels2, self.labels3]
         # print("hand detect init done")
 
     def read_sign(self, img):
@@ -320,83 +324,88 @@ class HandDetect():
                 if _hand['type'] == 'Right':
                     # print(_hand)
                     hand = _hand
-                    # print(hand)
                     x, y, w, h = hand['bbox']
+                    # print(hand)
+                    encoding = image_encoding(img)
+                    predictions, distance = predict(img, model_path= self.model_path)
+                    print(predictions)
+                    print( distance)
 
-                    imgWhite = np.ones((self.imgSize, self.imgSize, 3), np.uint8)* 255
-                    if (x - self.offset) > 0 and (y- self.offset) > 0:
-                        haveHand = True
-                        imgCrop = img[y- self.offset:y+ h+ self.offset, x-self.offset:x+ w+ self.offset]
-                        imgCropShape = imgCrop.shape
-                        # print("img crop shape", imgCropShape)
-                        # print(x,y,w,h)
-                        aspectRatio = h/w
+                    # imgWhite = np.ones((self.imgSize, self.imgSize, 3), np.uint8)* 255
+                    # if (x - self.offset) > 0 and (y- self.offset) > 0:
+                    #     haveHand = True
+                    #     imgCrop = img[y- self.offset:y+ h+ self.offset, x-self.offset:x+ w+ self.offset]
+                    #     imgCropShape = imgCrop.shape
+                    #     # print("img crop shape", imgCropShape)
+                    #     # print(x,y,w,h)
+                    #     aspectRatio = h/w
 
-                        if aspectRatio > 1:
-                            k = self.imgSize/h
-                            wCal = math.ceil(k*w)
-                            # print(wCal)
-                            imgResize = cv2.resize(imgCrop, (min(wCal,self.imgSize), self.imgSize))
-                            # imgResizeShape = imgResize.shape
-                            # print("img resize shape:", imgResizeShape)
-                            wGap = math.ceil((self.imgSize-wCal)/2)
-                            imgWhite[:, wGap:wCal + wGap] = imgResize
-                            # imgWhite  = cv2.cvtColor(imgWhite, cv2.COLOR_BGR2RGB)
-                            # cv2.imshow("hand1",imgWhite)
+                    #     if aspectRatio > 1:
+                    #         k = self.imgSize/h
+                    #         wCal = math.ceil(k*w)
+                    #         # print(wCal)
+                    #         imgResize = cv2.resize(imgCrop, (min(wCal,self.imgSize), self.imgSize))
+                    #         # imgResizeShape = imgResize.shape
+                    #         # print("img resize shape:", imgResizeShape)
+                    #         wGap = math.ceil((self.imgSize-wCal)/2)
+                    #         imgWhite[:, wGap:wCal + wGap] = imgResize
+                    #         # imgWhite  = cv2.cvtColor(imgWhite, cv2.COLOR_BGR2RGB)
+                    #         # cv2.imshow("hand1",imgWhite)
 
-                            # predict model
-                            for num in range(len(self.list_classifier)):
-                                classifier = self.list_classifier[num]
-                                prediction, index = classifier.getPrediction(imgWhite, draw=False)
-                                # print(prediction, index)
-                                # print("index_w: ", index, prediction[index], sep="  ")
-                                if prediction[index] > self.threshold :
-                                    dict_result[self.list_labels[num][index]] = prediction[index]
+                    #         # predict model
+                    #         for num in range(len(self.list_classifier)):
+                    #             classifier = self.list_classifier[num]
+                    #             prediction, index = classifier.getPrediction(imgWhite, draw=False)
+                    #             # print(prediction, index)
+                    #             # print("index_w: ", index, prediction[index], sep="  ")
+                    #             if prediction[index] > self.threshold :
+                    #                 dict_result[self.list_labels[num][index]] = prediction[index]
 
-                        else:
-                            k = self.imgSize/w
-                            hCal = math.ceil(k*h)
-                            # print(hCal)
-                            imgResize = cv2.resize(imgCrop, (self.imgSize, min(self.imgSize, hCal)))
-                            # imgResizeShape = imgResize.shape
-                            # print("img resize shape:", imgResizeShape)
-                            hGap = math.ceil((self.imgSize-hCal)/2)
-                            imgWhite[hGap:hCal + hGap, :] = imgResize
-                            # imgWhite  = cv2.cvtColor(imgWhite, cv2.COLOR_BGR2RGB)
-                            # cv2.imshow("hand1",imgWhite)
+                    #     else:
+                    #         k = self.imgSize/w
+                    #         hCal = math.ceil(k*h)
+                    #         # print(hCal)
+                    #         imgResize = cv2.resize(imgCrop, (self.imgSize, min(self.imgSize, hCal)))
+                    #         # imgResizeShape = imgResize.shape
+                    #         # print("img resize shape:", imgResizeShape)
+                    #         hGap = math.ceil((self.imgSize-hCal)/2)
+                    #         imgWhite[hGap:hCal + hGap, :] = imgResize
+                    #         # imgWhite  = cv2.cvtColor(imgWhite, cv2.COLOR_BGR2RGB)
+                    #         # cv2.imshow("hand1",imgWhite)
 
-                            # predict model
-                            for num in range(len(self.list_classifier)):
-                                classifier = self.list_classifier[num]
-                                prediction, index = classifier.getPrediction(imgWhite, draw=False)
-                                # print(prediction, index)
-                                # print("index_w: ", index, prediction[index], sep="  ")
-                                if prediction[index] > self.threshold :
-                                    dict_result[self.list_labels[num][index]] = prediction[index]
+                    #         # predict model
+                    #         for num in range(len(self.list_classifier)):
+                    #             classifier = self.list_classifier[num]
+                    #             prediction, index = classifier.getPrediction(imgWhite, draw=False)
+                    #             # print(prediction, index)
+                    #             # print("index_w: ", index, prediction[index], sep="  ")
+                    #             if prediction[index] > self.threshold :
+                    #                 dict_result[self.list_labels[num][index]] = prediction[index]
 
-                        label_result = ""
-                        if len(dict_result) > 0:
-                            print(dict_result)
-                            try:
-                                max_result = 0
-                                for label in dict_result:
-                                    if dict_result[label] >  max_result:
-                                        label_result = label
-                                        max_result = dict_result[label]
-                                print("ky tu hop le la: ____________ ", label_result)
-                                cv2.rectangle(imgOutput, (x - self.offset, y - self.offset-50),
-                                    (x - self.offset+90, y - self.offset-50+50), (255, 0, 255), cv2.FILLED)
-                                # cv2.putText(imgOutput, self.labels[index], (x, y -26), cv2.FONT_HERSHEY_COMPLEX, 1.7, (255, 255, 255), 2)
-                                cv2.putText(imgOutput, label_result, (x, y -26), cv2.FONT_HERSHEY_COMPLEX, 1.7, (255, 255, 255), 2)
-                                cv2.rectangle(imgOutput, (x-self.offset, y-self.offset),
-                                            (x + w+self.offset, y + h+self.offset), (255, 0, 255), 4)
-                            except:
-                                pass
-                        else:
-                            print("Khong dat nguong")
-                    # print("indexs: ", label_result)
-        cv2.imshow("hand",imgWhite)
-        cv2.waitKey(1)
+                    label_result = ""
+                    if distance < 100:
+                        print(distance)
+                        label_result = predictions[0]
+                        try:
+                            # max_result = 0
+                            # for label in dict_result:
+                            #     if dict_result[label] >  max_result:
+                            #         label_result = label
+                            #         max_result = dict_result[label]
+                            print("ky tu hop le la: ____________ ", label_result)
+                            cv2.rectangle(imgOutput, (x - self.offset, y - self.offset-50),
+                                (x - self.offset+90, y - self.offset-50+50), (255, 0, 255), cv2.FILLED)
+                            # cv2.putText(imgOutput, self.labels[index], (x, y -26), cv2.FONT_HERSHEY_COMPLEX, 1.7, (255, 255, 255), 2)
+                            cv2.putText(imgOutput, label_result, (x, y -26), cv2.FONT_HERSHEY_COMPLEX, 1.7, (255, 255, 255), 2)
+                            cv2.rectangle(imgOutput, (x-self.offset, y-self.offset),
+                                        (x + w+self.offset, y + h+self.offset), (255, 0, 255), 4)
+                        except:
+                            pass
+                    else:
+                        print("Khong dat nguong")
+                # print("indexs: ", label_result)
+        # cv2.imshow("hand",imgWhite)
+        # cv2.waitKey(1)
         return imgOutput, label_result
 
 if __name__ == '__main__':

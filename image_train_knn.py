@@ -8,14 +8,6 @@ import math
 from sklearn import neighbors
 import pickle
 
-################################
-wCam, hCam = 640, 480
-################################
-
-# cap = cv2.VideoCapture(0)
-# cap.set(3, wCam)
-# cap.set(4, hCam)
-# pTime = 0
 dir_path = os.path.dirname(os.path.realpath(__file__))
 train_dir = os.path.join(dir_path, "image")
 
@@ -66,8 +58,6 @@ def image_encoding(img):
     return encoding
 
 ##############################################################
-
-
 
 def train(train_dir, model_save_path=None, n_neighbors=None, knn_algo='ball_tree', verbose=False):
     """
@@ -123,7 +113,7 @@ def predict(image, knn_clf=None, model_path=None, distance_threshold=0.4):
     :param knn_clf: (optional) a knn classifier object. if not specified, model_save_path must be specified.
     :param model_path: (optional) path to a pickled knn classifier. if not specified, model_save_path must be knn_clf.
     :param distance_threshold: (optional) distance threshold for face classification. the larger it is, the more chance
-           of mis-classifying an unknown person as a known one.
+            of mis-classifying an unknown person as a known one.
     :return: a list of names and face locations for the recognized faces in the image: [(name, bounding box), ...].
         For faces of unrecognized persons, the name 'unknown' will be returned.
     """
@@ -142,10 +132,10 @@ def predict(image, knn_clf=None, model_path=None, distance_threshold=0.4):
         return []
 
     # Use the KNN model to find the best matches for the test face
-    closest_distances = knn_clf.kneighbors([encoding], n_neighbors=2)
-    print(closest_distances)
+    _distances = knn_clf.kneighbors([encoding], n_neighbors=1)
+    closest_distances = _distances[0][0][0]
     predict = knn_clf.predict([encoding])
     print("knn predict:", predict)
     # are_matches = closest_distances[0][i][0] <= distance_threshold
     # Predict classes and remove classifications that aren't within the threshold
-    return predict
+    return predict, closest_distances

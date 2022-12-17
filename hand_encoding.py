@@ -110,26 +110,26 @@ def predict(image, knn_clf=None, model_path=None, distance_threshold=0.4):
 if __name__ == "__main__":
     # STEP 1: Train the KNN classifier and save it to disk
     # Once the model is trained and saved, you can skip this step next time.
-    # print("Training KNN classifier...")
-    # classifier = train("image_train", model_save_path="trained_knn_model.clf", n_neighbors=2)
-    # print("Training complete!")
+    print("Training KNN classifier...")
+    classifier = train("image_train", model_save_path="trained_knn_model.clf", n_neighbors=2)
+    print("Training complete!")
 
-    model_path = os.path.join(dir_path,"model", "trained_knn_model.clf")
-    test_path = os.path.join(dir_path, "test")
-    # Loop through each training image for the current person
-    # for img_path in os.listdir(test_path):
-    while True:
-        success, img = cap.read()
+    # model_path = os.path.join(dir_path,"model", "trained_knn_model.clf")
+    # test_path = os.path.join(dir_path, "test")
+    # # Loop through each training image for the current person
+    # # for img_path in os.listdir(test_path):
+    # while True:
+    #     success, img = cap.read()
 
-        # img = cv2.imread(os.path.join(test_path, img_path))
-        # print("image:", img_path)
+    #     # img = cv2.imread(os.path.join(test_path, img_path))
+    #     # print("image:", img_path)
 
-        # Find all people in the image using a trained classifier model
-        # Note: You can pass in either a classifier file name or a classifier model instance
-        predictions = predict(img, model_path= model_path)
-        print(predictions)
+    #     # Find all people in the image using a trained classifier model
+    #     # Note: You can pass in either a classifier file name or a classifier model instance
+    #     predictions = predict(img, model_path= model_path)
+    #     print(predictions)
 
-        cv2.imshow("Img", img)
-        key = cv2.waitKey(1)
-        if key == ord("q"):  # press q to exit
-            break
+    #     cv2.imshow("Img", img)
+    #     key = cv2.waitKey(1)
+    #     if key == ord("q"):  # press q to exit
+    #         break
