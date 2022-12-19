@@ -54,6 +54,9 @@ def image_encoding(img):
                 encoding.append(math.hypot(list_point[i][0] - list_point[j][0], list_point[i][1] - list_point[j][1]))
         # print(len(encoding))
         # print(encoding)
+        for k in range(len(encoding)):
+            encoding[k] = encoding[k] / encoding[0]
+
 
     return encoding
 
@@ -105,11 +108,11 @@ def train(train_dir, model_save_path=None, n_neighbors=None, knn_algo='ball_tree
 
 
 # Predict
-def predict(image, knn_clf=None, model_path=None, distance_threshold=0.4):
+def predict(encoding, knn_clf=None, model_path=None, distance_threshold=0.4):
     """
     Recognizes faces in given image using a trained KNN classifier
 
-    :param image :  image
+    :param image :  encoding of image
     :param knn_clf: (optional) a knn classifier object. if not specified, model_save_path must be specified.
     :param model_path: (optional) path to a pickled knn classifier. if not specified, model_save_path must be knn_clf.
     :param distance_threshold: (optional) distance threshold for face classification. the larger it is, the more chance
@@ -126,7 +129,7 @@ def predict(image, knn_clf=None, model_path=None, distance_threshold=0.4):
         with open(model_path, 'rb') as f:
             knn_clf = pickle.load(f)
 
-    encoding = image_encoding(image)
+    # encoding = image_encoding(image)
     # If no faces are found in the image, return an empty result.
     if len(encoding) == 0:
         return []

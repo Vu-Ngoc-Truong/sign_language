@@ -1,6 +1,6 @@
 import cv2
 from cvzone.HandTrackingModule import HandDetector
-from cvzone.ClassificationModule import Classifier
+# from cvzone.ClassificationModule import Classifier
 import numpy as np
 import math
 import time
@@ -17,12 +17,13 @@ HOME = os.path.expanduser('~')
 import threading
 from collections import Counter
 from image_train_knn import image_encoding, predict
+import HandTrackingModule as htm
 
 #######################
 dir_path = os.path.dirname(os.path.realpath(__file__))
 
 # select camera source
-use_picam2 = False
+use_picam2 = True
 
 if use_picam2:
     # Use raspberry pi camera #########################################
@@ -73,11 +74,11 @@ class OpenCV_Display():
         self.video_enable = True
         self.last_indexs = ""
 
-        self.count_threshold = 4  # số ảnh cần đọc được để quyết định
+        self.count_threshold = 20  # số ảnh cần đọc được để quyết định
         self.labels_char =    ['a','b','c','d','đ','e','h','i','l','m','n','o','t','u','v','x','y',"^","w","'","`"," "]
         # self.labels_speech =  ['A','B','C','D','Đ','E','H','I','L','M','N','O','T','U','V','X','Y',"Mũ","Râu","Sắc","Huyền","Cách"]
-        self.dict_labels_word = {"_d":'đ', 'sp':" "}
-        self.dict_labels_speech = {"'": "sắc", "`": "huyền","?": "hỏi", "~": "ngã", "*": "nặng", "w": "râu", "^": "mũ", "_d":"đ"}
+        self.dict_labels_word = {"_d":'đ', 'sp':" ", "hi":""}
+        self.dict_labels_speech = {"'": "sắc", "`": "huyền","?": "hỏi", "~": "ngã", "*": "nặng", "w": "râu", "^": "mũ", "_d":"đ", 'sp':"cách", "hi":"xin chào"}
         self.dict_image_name = {"'": "sac", "`": "huyen","?": "hoi", "~": "nga", "*": "nang", "w": "rau", "^": "mu", "đ":"_d"}
 
     def display_video(self):
@@ -204,7 +205,7 @@ class OpenCV_Display():
                     print("input string: ",input_string)
                     self.ui.txtResult.setText(input_string)
                     # Gap dau "." la het cau
-                    if (self.labels_char[most_index] == " ") or len(self.result_string_list) > 10:
+                    if (most_index == " ") or len(self.result_string_list) > 10:
                         # phat ca cau
                         try:
                             text_to_speech(input_string)
@@ -288,7 +289,7 @@ class OpenCV_Display():
 class HandDetect():
     def __init__(self):
         global use_picam2
-        self.detector = HandDetector(maxHands=2)
+        self.detector = htm.handDetector(maxHands=2, detectionCon=0.7)
         dir_path = os.path.dirname(os.path.realpath(__file__))
 
         self.model_path =  os.path.join(dir_path,"model", "trained_knn_model.clf")
@@ -301,6 +302,7 @@ class HandDetect():
         self.offset = 20
         self.imgSize = 224
         self.threshold = 0.99
+        self.dict_labels_folder = {"HI":"Hi","CACH":'SP','CHAM':'.', 'SAC':"'", 'HUYEN':"`", 'HOI':"?", 'NGA':"~",'NANG':'*', 'MU':"^",'RAU':'W'}
         # self.labels =  ['A','B','C','D','E','H','I','O','T','U','Y','L',"^","W","'","`","SP","*"]
         # self.labels =  ['A','B','C','D','_D','E','H','I','L','M','N','O','T','U','V','X','Y',"^","W","'","`","SP"]
         # self.labels  =  ['A','B','C','D']
@@ -326,8 +328,43 @@ class HandDetect():
                     hand = _hand
                     x, y, w, h = hand['bbox']
                     # print(hand)
-                    encoding = image_encoding(img)
-                    predictions, distance = predict(img, model_path= self.model_path)
+                    # encoding = image_encoding(img)
+
+                    # find hand, return hands and img
+                    lmList, bbox = self.detector.findPosition(img, draw=False)
+                    encoding = []
+                    if len(lmList) != 0:
+                        # print(lmList[4], lmList[8])
+                        list_point = []
+
+                        for (id, cx, cy) in lmList:
+                            if (id % 4) == 0:
+                                cv2.circle(img, (cx, cy), 15, (10*id, 0, 255-10*id), cv2.FILLED)
+                                list_point.append([cx,cy])
+                        # print(list_point)
+
+
+                        for i in range(len(list_point)):
+                            for j in range((i+1),len(list_point)):
+                                encoding.append(math.hypot(list_point[i][0] - list_point[j][0], list_point[i][1] - list_point[j][1]))
+                        # print(len(encoding))
+                        # print(encoding)
+                        for k in range(len(encoding)):
+                            encoding[k] = encoding[k] / encoding[0]
+
+                        # Dimension value
+                        if (list_point[0][0] >= list_point[1][0]):
+                            encoding.append(1)
+                        else:
+                            encoding.append(-1)
+
+                        if (list_point[0][1] >= list_point[1][1]):
+                            encoding.append(1)
+                        else:
+                            encoding.append(-1)
+                    print("enc_img", encoding)
+                    # prediction image ####################################
+                    predictions, distance = predict(encoding, model_path= self.model_path)
                     print(predictions)
                     print( distance)
 
@@ -383,9 +420,11 @@ class HandDetect():
                     #                 dict_result[self.list_labels[num][index]] = prediction[index]
 
                     label_result = ""
-                    if distance < 100:
-                        print(distance)
+                    if distance < 55:
+                        # print(distance)
                         label_result = predictions[0]
+                        if label_result in self.dict_labels_folder:
+                            label_result = self.dict_labels_folder[label_result]
                         try:
                             # max_result = 0
                             # for label in dict_result:
