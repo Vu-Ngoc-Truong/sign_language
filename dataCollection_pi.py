@@ -17,7 +17,7 @@ from sklearn import neighbors
 import pickle
 import json
 # select camera source
-use_picam2 = True
+use_picam2 = False
 
 if use_picam2:
     # Use camera of raspberry #####################################################
@@ -188,15 +188,16 @@ class CollectionImage():
                                         encoding[k] = encoding[k] / encoding[0]
 
                                     # Dimension value
-                                    if (list_point[0][0] >= list_point[1][0]):
-                                        encoding.append(1)
-                                    else:
-                                        encoding.append(-1)
+                                    for i in range(len(list_point)-1):
+                                        if (list_point[0][0] >= list_point[i+1][0]):
+                                            encoding.append(1)
+                                        else:
+                                            encoding.append(-1)
 
-                                    if (list_point[0][1] >= list_point[1][1]):
-                                        encoding.append(1)
-                                    else:
-                                        encoding.append(-1)
+                                        if (list_point[0][1] >= list_point[i+1][1]):
+                                            encoding.append(1)
+                                        else:
+                                            encoding.append(-1)
                                 print("enc_img", encoding)
                                 self.dict_encoding[self.current_char].append(encoding)
 

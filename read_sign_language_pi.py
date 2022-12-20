@@ -23,7 +23,7 @@ import HandTrackingModule as htm
 dir_path = os.path.dirname(os.path.realpath(__file__))
 
 # select camera source
-use_picam2 = True
+use_picam2 = False
 
 if use_picam2:
     # Use raspberry pi camera #########################################
@@ -77,7 +77,7 @@ class OpenCV_Display():
         self.count_threshold = 20  # số ảnh cần đọc được để quyết định
         self.labels_char =    ['a','b','c','d','đ','e','h','i','l','m','n','o','t','u','v','x','y',"^","w","'","`"," "]
         # self.labels_speech =  ['A','B','C','D','Đ','E','H','I','L','M','N','O','T','U','V','X','Y',"Mũ","Râu","Sắc","Huyền","Cách"]
-        self.dict_labels_word = {"_d":'đ', 'sp':" ", "hi":""}
+        self.dict_labels_word = {"_d":'đ', 'sp':" ", "hi":"", "ily":"I Love You!"}
         self.dict_labels_speech = {"'": "sắc", "`": "huyền","?": "hỏi", "~": "ngã", "*": "nặng", "w": "râu", "^": "mũ", "_d":"đ", 'sp':"cách", "hi":"xin chào"}
         self.dict_image_name = {"'": "sac", "`": "huyen","?": "hoi", "~": "nga", "*": "nang", "w": "rau", "^": "mu", "đ":"_d"}
 
@@ -353,71 +353,21 @@ class HandDetect():
                             encoding[k] = encoding[k] / encoding[0]
 
                         # Dimension value
-                        if (list_point[0][0] >= list_point[1][0]):
-                            encoding.append(1)
-                        else:
-                            encoding.append(-1)
+                        for i in range(len(list_point)-1):
+                            if (list_point[0][0] >= list_point[i+1][0]):
+                                encoding.append(1)
+                            else:
+                                encoding.append(-1)
 
-                        if (list_point[0][1] >= list_point[1][1]):
-                            encoding.append(1)
-                        else:
-                            encoding.append(-1)
+                            if (list_point[0][1] >= list_point[i+1][1]):
+                                encoding.append(1)
+                            else:
+                                encoding.append(-1)
                     print("enc_img", encoding)
                     # prediction image ####################################
                     predictions, distance = predict(encoding, model_path= self.model_path)
                     print(predictions)
                     print( distance)
-
-                    # imgWhite = np.ones((self.imgSize, self.imgSize, 3), np.uint8)* 255
-                    # if (x - self.offset) > 0 and (y- self.offset) > 0:
-                    #     haveHand = True
-                    #     imgCrop = img[y- self.offset:y+ h+ self.offset, x-self.offset:x+ w+ self.offset]
-                    #     imgCropShape = imgCrop.shape
-                    #     # print("img crop shape", imgCropShape)
-                    #     # print(x,y,w,h)
-                    #     aspectRatio = h/w
-
-                    #     if aspectRatio > 1:
-                    #         k = self.imgSize/h
-                    #         wCal = math.ceil(k*w)
-                    #         # print(wCal)
-                    #         imgResize = cv2.resize(imgCrop, (min(wCal,self.imgSize), self.imgSize))
-                    #         # imgResizeShape = imgResize.shape
-                    #         # print("img resize shape:", imgResizeShape)
-                    #         wGap = math.ceil((self.imgSize-wCal)/2)
-                    #         imgWhite[:, wGap:wCal + wGap] = imgResize
-                    #         # imgWhite  = cv2.cvtColor(imgWhite, cv2.COLOR_BGR2RGB)
-                    #         # cv2.imshow("hand1",imgWhite)
-
-                    #         # predict model
-                    #         for num in range(len(self.list_classifier)):
-                    #             classifier = self.list_classifier[num]
-                    #             prediction, index = classifier.getPrediction(imgWhite, draw=False)
-                    #             # print(prediction, index)
-                    #             # print("index_w: ", index, prediction[index], sep="  ")
-                    #             if prediction[index] > self.threshold :
-                    #                 dict_result[self.list_labels[num][index]] = prediction[index]
-
-                    #     else:
-                    #         k = self.imgSize/w
-                    #         hCal = math.ceil(k*h)
-                    #         # print(hCal)
-                    #         imgResize = cv2.resize(imgCrop, (self.imgSize, min(self.imgSize, hCal)))
-                    #         # imgResizeShape = imgResize.shape
-                    #         # print("img resize shape:", imgResizeShape)
-                    #         hGap = math.ceil((self.imgSize-hCal)/2)
-                    #         imgWhite[hGap:hCal + hGap, :] = imgResize
-                    #         # imgWhite  = cv2.cvtColor(imgWhite, cv2.COLOR_BGR2RGB)
-                    #         # cv2.imshow("hand1",imgWhite)
-
-                    #         # predict model
-                    #         for num in range(len(self.list_classifier)):
-                    #             classifier = self.list_classifier[num]
-                    #             prediction, index = classifier.getPrediction(imgWhite, draw=False)
-                    #             # print(prediction, index)
-                    #             # print("index_w: ", index, prediction[index], sep="  ")
-                    #             if prediction[index] > self.threshold :
-                    #                 dict_result[self.list_labels[num][index]] = prediction[index]
 
                     label_result = ""
                     if distance < 55:
