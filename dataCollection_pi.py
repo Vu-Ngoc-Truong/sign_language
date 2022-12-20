@@ -17,7 +17,7 @@ from sklearn import neighbors
 import pickle
 import json
 # select camera source
-use_picam2 = False
+use_picam2 = True
 
 if use_picam2:
     # Use camera of raspberry #####################################################

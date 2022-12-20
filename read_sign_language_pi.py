@@ -23,7 +23,7 @@ import HandTrackingModule as htm
 dir_path = os.path.dirname(os.path.realpath(__file__))
 
 # select camera source
-use_picam2 = False
+use_picam2 = True
 
 if use_picam2:
     # Use raspberry pi camera #########################################
